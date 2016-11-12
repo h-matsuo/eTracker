@@ -1,0 +1,3 @@
+[submodule "subfact_pi_ina219"]
+	path = subfact_pi_ina219
+	url = https://github.com/h-matsuo/subfact_pi_ina219.git
