@@ -24,5 +24,5 @@ Track energy consumption of your device with Adafruit INA219 chip.
 Just run `eTracker.py`.
 
 ```bash
-$ ./eTracker.py
+$ sudo ./eTracker.py 1 result.json
 ```
