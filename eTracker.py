@@ -28,7 +28,7 @@ def main():
 
     # Show usage if lack of argv
     if len(argv) < 2:
-        print "Usage: ./eTracker.py <delay_time> [<out_path>]"
+        print "Usage: python eTracker.py <delay_time> [<output_file>]"
         exit()
 
     # Set delay time from argv
@@ -57,6 +57,10 @@ def main():
 
     # Start tracking
     out_control.start()
+
+    # Print message
+    print "Start tracking..."
+    print 'Press "Ctrl + c" to quit.'
 
 if __name__ == "__main__":
     main()
