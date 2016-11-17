@@ -31,13 +31,13 @@ def main():
         print "Usage: python eTracker.py <delay_time> [<output_file>]"
         exit()
 
-    # Set delay time from argv
+    # Set delay time
     delay_time = float(argv[1])
 
-    # Set output file name
-    out_path = None
+    # Set output file path
+    output_path = None
     if len(argv) > 2:
-        out_path = argv[2]
+        output_path = argv[2]
 
     # Connect to INA219 chip
     global ina219
@@ -51,7 +51,7 @@ def main():
     out_control = OutputController()
 
     # Configuration
-    out_control.setOutputPath(out_path)
+    out_control.setOutputPath(output_path)
     out_control.setDelayTime(delay_time)
     out_control.setJSONFactory(getOutputData)
 
