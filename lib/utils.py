@@ -47,7 +47,7 @@ class OutputController:
     def setOutputPath(self, path):
         self.output_path = path
         if self.output_path != None:
-            self.fout = open(self.output_path, "a")
+            self.fout = open(self.output_path, "w")
 
     def setDelayTime(self, time):
         self.delay_time = time
