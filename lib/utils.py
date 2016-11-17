@@ -41,6 +41,9 @@ class Utils:
 
 class OutputController:
 
+    def __init__(self):
+        self.is_first_write = True
+
     def setOutputPath(self, path):
         self.output_path = path
         if self.output_path != None:
@@ -58,7 +61,7 @@ class OutputController:
 
     def stop(self):
         self.thread_id.cancel()
-        self.write("\b \n]\n")
+        self.write("\n]\n")
         if self.output_path != None:
             self.fout.close()
         #exit()
@@ -66,7 +69,13 @@ class OutputController:
     def output(self):
         self.thread_id = threading.Timer(self.delay_time, self.output)
         self.thread_id.start()
-        self.write("\n" + self.JSON_factory_func() + ",")
+        if self.is_first_write:
+            out_str = ""
+            self.is_first_write = False
+        else:
+            out_str = ","
+        out_str += "\n" + self.JSON_factory_func()
+        self.write(out_str)
 
     def write(self, str):
         if self.output_path == None:
