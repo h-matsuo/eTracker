@@ -28,7 +28,7 @@ class Utils:
             "shunt_voltage_mv": ina219_obj.getShuntVoltage_mV(),
             "bus_voltage_v"   : ina219_obj.getBusVoltage_V(),
             "current_ma"      : ina219_obj.getCurrent_mA(),
-            "power_mw"        : ina219_obj.getPower_mW()
+            "power_w"         : ina219_obj.getPower_W()
         }
 
     @staticmethod

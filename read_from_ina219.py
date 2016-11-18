@@ -31,5 +31,5 @@ class ReadFromINA219:
     def getCurrent_mA(self):
         return self.ina219.getCurrent_mA()
 
-    def getPower_mW(self):
-        return self.ina219.getPower_mW()
+    def getPower_W(self):
+        return self.ina219.getPower_W()

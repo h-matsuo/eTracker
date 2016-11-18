@@ -51,7 +51,7 @@ def main():
     for entry in input_data:
 
         current_time = entry["date"]
-        current_power = entry["data"]["power_mw"]
+        current_power = entry["data"]["power_w"]
 
         if current_time == begin_time:
             status = 1
@@ -71,8 +71,7 @@ def main():
         diff_s = calculateDiffInSec(previous_time, current_time)
 
         # Calculate area of trapezoid
-        # NOTE: The measure of current_power is [mW]
-        consumed_joules += ((current_power / 1000.0) + (previous_power / 1000.0)) * diff_s / 2.0
+        consumed_joules += (current_power + previous_power) * diff_s / 2.0
 
         previous_time = current_time
         previous_power = current_power
