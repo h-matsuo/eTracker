@@ -55,12 +55,12 @@ def main():
     out_control.setDelayTime(delay_time)
     out_control.setJSONFactory(getOutputData)
 
-    # Start tracking
-    out_control.start()
-
     # Print message
     print "Start tracking..."
     print 'Press "Ctrl + c" to quit.'
+
+    # Start tracking
+    out_control.start()
 
 if __name__ == "__main__":
     main()
