@@ -71,24 +71,22 @@ class SearchForBoundary:
 
             break
 
-def main():
+def analyze(argv):
 
-    # Get command line args (argv)
-    argv = sys.argv
-
-    # Print usage if lack of argv
-    if len(argv) < 4:
-        print "Usage: python analyze.py <input_path> <begin_date> <end_date>"
+    # Print error message if lack of argv
+    if len(argv) < 3:
+        print "ERROR: analyze: indicate options;"
+        print "       See 'python eTracker.py help'."
         exit()
 
     # Set input file path
-    input_path = argv[1]
+    input_path = argv[0]
 
     # Set begin time of analyzation
-    begin_time = argv[2]
+    begin_time = argv[1]
 
     # Set end time of analyzation
-    end_time = argv[3]
+    end_time = argv[2]
 
     # Open input file and parse JSON data
     fin = open(input_path, "r")
@@ -132,6 +130,3 @@ def main():
 
     # Print calculated value
     print "Consumed power: %f [J]" % consumed_joules
-
-if __name__ == "__main__":
-    main()

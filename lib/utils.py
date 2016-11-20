@@ -13,6 +13,13 @@ import threading
 class Utils:
 
     @staticmethod
+    def printUsage():
+        fin = open("usage.txt")
+        for line in fin:
+            print line.rstrip()
+        fin.close()
+
+    @staticmethod
     def formatDatetime(datetime_obj):
         """
         Receive a datetime.datetime object and format it like "2016/09/22-09:59:30.005"
