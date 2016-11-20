@@ -15,6 +15,62 @@ def calculateDiffInSec(previous_time, current_time):
     current_datetime = datetime.strptime(current_time[:current_time.rfind('.')], "%Y/%m/%d-%H:%M:%S")
     return (current_datetime - previous_datetime).total_seconds() - 1 + ((1000 + int(current_millisec) - int(previous_millisec)) / 1000.0)
 
+class SearchForBoundary:
+
+    def __init__(self, begin_time, end_time, json_data):
+        self.begin_time = begin_time
+        self.end_time   = end_time
+        self.json_data  = json_data
+        self.begin_index = -1
+        self.end_index   = -1
+        self.__search()
+
+    def getBeginIndex(self):
+        return self.begin_index
+
+    def getEndIndex(self):
+        return self.end_index
+
+    def __search(self):
+
+        # Search for begin_index
+        for i in range(0, len(self.json_data)):
+
+            diff_begin_s = calculateDiffInSec(self.begin_time, self.json_data[i]["date"])
+
+            if diff_begin_s < 0:
+                continue
+
+            if i == 0:
+                self.begin_index = i    # 0
+            else:
+                diff_tmp_s = calculateDiffInSec(self.begin_time, self.json_data[i - 1]["date"])
+                if diff_begin_s < abs(diff_tmp_s):
+                    self.begin_index = i
+                else:
+                    self.begin_index = i - 1
+
+            break
+
+        # Search for end_index
+        for i in range(0, len(self.json_data)):
+
+            diff_end_s = calculateDiffInSec(self.end_time, self.json_data[i]["date"])
+
+            if diff_end_s < 0:
+                continue
+
+            if i == len(self.json_data) - 1:
+                self.end_index = i      # len(self.json_data) - 1
+            else:
+                diff_tmp_s = calculateDiffInSec(self.end_time, self.json_data[i - 1]["date"])
+                if diff_begin_s < abs(diff_tmp_s):
+                    self.end_index = i
+                else:
+                    self.end_index = i - 1
+
+            break
+
 def main():
 
     # Get command line args (argv)
@@ -36,36 +92,21 @@ def main():
 
     # Open input file and parse JSON data
     fin = open(input_path, "r")
-    input_data = json.load(fin)
+    json_data = json.load(fin)
 
-    # Start analyzation
+    # Calculate boundary of begin and end for analyzation
+    boundary = SearchForBoundary(begin_time, end_time, json_data)
 
-    status = 0  # 0: Ignore this entry beause it is before the begin time 
-                # 1: The first of target entry (#1)
-                # 2: Target entries (#2 - #(N-1))
-                # 3: The last of target entry (#N)
-                # 4: Ignore this entry beause it is after the end time
+    # Calculate power with the trapezoidal approximation
 
     consumed_joules = 0.0
+    previous_time  = json_data[boundary.getBeginIndex()]["date"]
+    previous_power = json_data[boundary.getBeginIndex()]["data"]["power_w"]
 
-    for entry in input_data:
+    for i in range(boundary.getBeginIndex() + 1, boundary.getEndIndex() + 1):
 
-        current_time = entry["date"]
-        current_power = entry["data"]["power_w"]
-
-        if current_time == begin_time:
-            status = 1
-        elif current_time == end_time:
-            status = 3
-
-        if status == 0 or status == 4:
-            continue
-
-        if status == 1:
-            previous_time = current_time
-            previous_power = current_power
-            status = 2
-            continue
+        current_time  = json_data[boundary.getEndIndex()]["date"]
+        current_power = json_data[boundary.getEndIndex()]["data"]["power_w"]
 
         # Caluclate diff of time in sec
         diff_s = calculateDiffInSec(previous_time, current_time)
@@ -75,12 +116,6 @@ def main():
 
         previous_time = current_time
         previous_power = current_power
-
-        if status == 3:
-            status = 4
-            continue
-
-    # End analyzation
 
     # Close input file
     fin.close()
