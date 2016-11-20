@@ -31,6 +31,9 @@ Python 2.x 系での動作を確認しています．
 
 次のコマンドが使用できます：
 
+help
+    このテキストを表示します．
+
 track <delay_time> [<output_path>]
     目標デバイスの電力消費状況を監視します．
     Adafruit INA219 チップからデータを取得し，整形して標準出力に出力します．
@@ -47,4 +50,5 @@ analyze <input_path> <begin_date> <end_date>
             分析対象のデータの開始時刻を指定します．
     <end_date>
             分析対象のデータの終了時刻を指定します．
+
 ```
