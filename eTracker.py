@@ -1,6 +1,12 @@
 #!/usr/bin/python
 # coding: UTF-8
 
+"""
+eTracker -- Utility Tool for Raspberry Pi
+
+Track energy consumption of your device with Adafruit INA219 chip.
+"""
+
 __author__  = "Hiroyuki Matsuo <h-matsuo@ist.osaka-u.ac.jp>"
 
 import sys

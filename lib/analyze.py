@@ -1,14 +1,25 @@
 #!/usr/bin/python
 # coding: UTF-8
 
+"""
+Implementation of command: analyze
+"""
+
 __author__  = "Hiroyuki Matsuo <h-matsuo@ist.osaka-u.ac.jp>"
 
 from datetime import datetime
 import json
 import sys
 
-# NOTE: Format of time must follow: 2016/11/01-10:05:20.010
 def calculateDiffInSec(previous_time, current_time):
+    """
+    Calculate diff time in [sec] between two time string
+
+    NOTE: Format of time must follow: 2016/11/01-10:05:20.010
+
+    @param previous_time Time string #1
+    @param current_time  Time string #2
+    """
     previous_millisec = previous_time[previous_time.rfind('.')+1:]
     previous_datetime = datetime.strptime(previous_time[:previous_time.rfind('.')], "%Y/%m/%d-%H:%M:%S")
     current_millisec = current_time[current_time.rfind('.')+1:]
@@ -16,8 +27,18 @@ def calculateDiffInSec(previous_time, current_time):
     return (current_datetime - previous_datetime).total_seconds() - 1 + ((1000 + int(current_millisec) - int(previous_millisec)) / 1000.0)
 
 class SearchForBoundary:
+    """
+    Calculate the boundary of section to analyze
+    """
 
     def __init__(self, begin_time, end_time, json_data):
+        """
+        Constructor
+
+        @param begin_time Begin time of section to analyze
+        @param end_time   End time of section to analyze
+        @param json_data  JSON data created by track command
+        """
         self.begin_time = begin_time
         self.end_time   = end_time
         self.json_data  = json_data
@@ -26,12 +47,25 @@ class SearchForBoundary:
         self.__search()
 
     def getBeginIndex(self):
+        """
+        Return begin index of section to analyze
+
+        @return Begin index 
+        """
         return self.begin_index
 
     def getEndIndex(self):
+        """
+        Return end index of section to analyze
+
+        @return End index 
+        """
         return self.end_index
 
     def __search(self):
+        """
+        Calculate the boundary
+        """
 
         # Search for begin_index
         for i in range(0, len(self.json_data)):
@@ -72,6 +106,11 @@ class SearchForBoundary:
             break
 
 def analyze(argv):
+    """
+    Execute command: analyze
+
+    @param argv Command options
+    """
 
     # Print error message if lack of argv
     if len(argv) < 3:
