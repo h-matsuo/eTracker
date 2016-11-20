@@ -68,42 +68,48 @@ class SearchForBoundary:
         """
 
         # Search for begin_index
-        for i in range(0, len(self.json_data)):
+        if self.begin_time == "-":
+            self.begin_index = 0
+        else:
+            for i in range(0, len(self.json_data)):
 
-            diff_begin_s = calculateDiffInSec(self.begin_time, self.json_data[i]["date"])
+                diff_begin_s = calculateDiffInSec(self.begin_time, self.json_data[i]["date"])
 
-            if diff_begin_s < 0:
-                continue
+                if diff_begin_s < 0:
+                    continue
 
-            if i == 0:
-                self.begin_index = i    # 0
-            else:
-                diff_tmp_s = calculateDiffInSec(self.begin_time, self.json_data[i - 1]["date"])
-                if diff_begin_s < abs(diff_tmp_s):
-                    self.begin_index = i
+                if i == 0:
+                    self.begin_index = i    # 0
                 else:
-                    self.begin_index = i - 1
+                    diff_tmp_s = calculateDiffInSec(self.begin_time, self.json_data[i - 1]["date"])
+                    if diff_begin_s < abs(diff_tmp_s):
+                        self.begin_index = i
+                    else:
+                        self.begin_index = i - 1
 
-            break
+                break
 
         # Search for end_index
-        for i in range(0, len(self.json_data)):
+        if self.end_time == "-":
+            self.end_index = len(self.json_data) - 1
+        else:
+            for i in range(0, len(self.json_data)):
 
-            diff_end_s = calculateDiffInSec(self.end_time, self.json_data[i]["date"])
+                diff_end_s = calculateDiffInSec(self.end_time, self.json_data[i]["date"])
 
-            if diff_end_s < 0:
-                continue
+                if diff_end_s < 0:
+                    continue
 
-            if i == len(self.json_data) - 1:
-                self.end_index = i      # len(self.json_data) - 1
-            else:
-                diff_tmp_s = calculateDiffInSec(self.end_time, self.json_data[i - 1]["date"])
-                if diff_begin_s < abs(diff_tmp_s):
-                    self.end_index = i
+                if i == len(self.json_data) - 1:
+                    self.end_index = i      # len(self.json_data) - 1
                 else:
-                    self.end_index = i - 1
+                    diff_tmp_s = calculateDiffInSec(self.end_time, self.json_data[i - 1]["date"])
+                    if diff_end_s < abs(diff_tmp_s):
+                        self.end_index = i
+                    else:
+                        self.end_index = i - 1
 
-            break
+                break
 
 def analyze(argv):
     """
