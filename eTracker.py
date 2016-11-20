@@ -26,7 +26,7 @@ def main():
     # Get command line args (argv)
     argv = sys.argv
 
-    # Show usage if lack of argv
+    # Print usage if lack of argv
     if len(argv) < 2:
         print "Usage: python eTracker.py <delay_time> [<output_file>]"
         exit()

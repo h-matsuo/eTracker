@@ -76,9 +76,9 @@ def main():
     # Get command line args (argv)
     argv = sys.argv
 
-    # Show usage if lack of argv
+    # Print usage if lack of argv
     if len(argv) < 4:
-        print "Usage: python analyze.py <input_path> <begin_time> <end_time>"
+        print "Usage: python analyze.py <input_path> <begin_date> <end_date>"
         exit()
 
     # Set input file path
@@ -94,8 +94,18 @@ def main():
     fin = open(input_path, "r")
     json_data = json.load(fin)
 
+    # Print info
+    print "Checking start/end date..."
+
     # Calculate boundary of begin and end for analyzation
     boundary = SearchForBoundary(begin_time, end_time, json_data)
+
+    # Print info
+    print "Begin date of analyzation: %s" % json_data[boundary.getBeginIndex()]["date"]
+    print "  End date of analyzation: %s" % json_data[boundary.getEndIndex()]["date"]
+
+    # Print info
+    print "Calculating power..."
 
     # Calculate power with the trapezoidal approximation
 
@@ -121,7 +131,7 @@ def main():
     fin.close()
 
     # Print calculated value
-    print "Consumed: %f [J]" % consumed_joules
+    print "Consumed power: %f [J]" % consumed_joules
 
 if __name__ == "__main__":
     main()
