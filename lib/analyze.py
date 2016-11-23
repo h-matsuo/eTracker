@@ -19,6 +19,7 @@ def calculateDiffInSec(previous_time, current_time):
 
     @param previous_time Time string #1
     @param current_time  Time string #2
+    @return Diff time in [sec]
     """
     previous_millisec = previous_time[previous_time.rfind('.')+1:]
     previous_datetime = datetime.strptime(previous_time[:previous_time.rfind('.')], "%Y/%m/%d-%H:%M:%S")
@@ -146,6 +147,9 @@ def exec_analyze(argv):
     # Print info
     print "Begin date of analyzation: %s" % json_data[boundary.getBeginIndex()]["date"]
     print "  End date of analyzation: %s" % json_data[boundary.getEndIndex()]["date"]
+
+    # Print duration
+    print "Duration: %.3f [sec]" % calculateDiffInSec(json_data[boundary.getBeginIndex()]["date"], json_data[boundary.getEndIndex()]["date"])
 
     # Print info
     print "Calculating power..."
