@@ -34,10 +34,10 @@ Python 2.x 系での動作を確認しています．
 help
     このテキストを表示します．
 
-track <delay_time> [<output_path>]
+track <interval> [<output_path>]
     目標デバイスの電力消費状況を監視します．
     Adafruit INA219 チップからデータを取得し，整形して標準出力に出力します．
-    <delay_time>
+    <interval>
             データを取得する間隔を秒単位で指定します．
     <output_path>
             データの出力ファイルを指定できます．

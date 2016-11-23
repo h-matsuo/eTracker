@@ -111,7 +111,7 @@ class SearchForBoundary:
 
                 break
 
-def analyze(argv):
+def exec_analyze(argv):
     """
     Execute command: analyze
 

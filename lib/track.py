@@ -7,112 +7,119 @@ Implementation of command: track
 
 __author__  = "Hiroyuki Matsuo <h-matsuo@ist.osaka-u.ac.jp>"
 
+import collections
 from datetime import datetime
+import json
 import signal
 import threading
 
 from lib.read_from_ina219 import ReadFromINA219
 from lib.utils import Utils
 
-class OutputController:
+class TrackController:
     """
-    Control string output and repeatedly-tracking
+    Control tracking INA219
     """
 
     def __init__(self):
         """
         Constructor
         """
-        self.is_first_write = True
+        self.firstData = True
+        # Default output: standard output
+        self.output_path = None
+        # Connect to INA219 chip
+        self.ina219 = ReadFromINA219()
+        # Handle SIGINT
+        signal.signal(signal.SIGINT, self.__SIGINTHandler)
 
-    def setOutputPath(self, path):
+    def setInterval(self, interval):
         """
-        Set output file path for tracked data
+        Set interval between tracking
 
-        @param path Output file path
+        @param interval Interval
         """
-        self.output_path = path
-        if self.output_path != None:
-            self.fout = open(self.output_path, "w")
+        self.interval = interval
 
-    def setDelayTime(self, delay_time):
+    def setOutputPath(self, output_path):
         """
-        Set delay time of getting data repeatedly
+        Set file path for writing tracked data
 
-        @param delay_time Delay time
+        @param output_path Output file path
         """
-        self.delay_time = delay_time
-
-    def setJSONFactory(self, factory_func):
-        """
-        Set JSON factory function to prepare for output data
-
-        @param factory_func JSON factory function
-        """
-        self.JSON_factory_func = factory_func
+        self.output_path = output_path
+        self.fout = open(self.output_path, "w")
 
     def start(self):
         """
         Start tracking
         """
-        self.write("[")
-        self.output()
+        self.__write("[\n")
+        self.__track()
 
     def stop(self):
         """
         Stop tracking
         """
         self.thread_id.cancel()
-        self.write("\n]\n")
+        self.__write("\n]")
         if self.output_path != None:
             self.fout.close()
-        # exit()
 
-    def output(self):
+    def __write(self, data):
         """
-        Execute myself recursively to track
-        """
-        self.thread_id = threading.Timer(self.delay_time, self.output)
-        self.thread_id.start()
-        if self.is_first_write:
-            out_str = ""
-            self.is_first_write = False
-        else:
-            out_str = ","
-        out_str += "\n" + self.JSON_factory_func()
-        self.write(out_str)
-
-    def write(self, str):
-        """
-        Write string to standard output or file
+        Write data to standard output or file
 
         @param str Output string
         """
-        if self.output_path == None:
-            print str
+        if self.output_path != None:
+            self.fout.write(data)
         else:
-            self.fout.write(str)
-            self.fout.flush()
+            print data, # Print without "\n"
 
-def SIGINTHandler(num, frame):
-    """
-    SIGINT signal handler
-    """
-    global out_control
-    out_control.stop()
+    def __track(self):
+        """
+        Track INA219 repeatedly
+        """
+        self.thread_id = threading.Timer(self.interval, self.__track)
+        self.thread_id.start()
+        # Get JSON data
+        data = self.__getJSONData(datetime.today(), self.ina219).split("\n")
+        # Write data delimiter (",")
+        if self.firstData == True:
+            self.firstData = False
+        else:
+            self.__write(",\n")
+        # Format and write JSON data
+        for i in range(0, len(data)):
+            self.__write("  " + data[i].rstrip())
+            if i != len(data) - 1:
+                self.__write("\n")
 
-def getOutputData():
-    """
-    Prepare for output data
+    def __getJSONData(self, datetime_obj, ina219_obj):
+        """
+        Prepare for data to be output in JSON format
 
-    @return Output data
-    """
-    global ina219
-    time = datetime.today()
-    ina219_data = Utils.getINA219Data(ina219)
-    return Utils.formatToJSON(Utils.formatDatetime(time), ina219_data)
+        @param datetime_obj datetime.datetime object
+        @param ina219_obj ReadFromINA219 object
+        @return Data to be output in JSON format
+        """
+        return json.dumps({
+            "date": Utils.formatDatetime(datetime_obj),
+            "data": {
+                "bus_voltage_v": ina219_obj.getBusVoltage_V(),
+                "current_ma"   : ina219_obj.getCurrent_mA(),
+                "power_w"      : ina219_obj.getPower_W()
+            }
+        }, indent = 2)
 
-def track(argv):
+    def __SIGINTHandler(self, num, frame):
+        """
+        Signal SIGINT handler
+        """
+        self.stop()
+
+def exec_track(argv):
     """
     Execute command: track
 
@@ -121,39 +128,25 @@ def track(argv):
 
     # Print error message if no argv indicated
     if len(argv) < 1:
-        print "ERROR: track: indicate delay time in [sec];"
+        print "ERROR: track: indicate interval in [sec];"
         print "       See 'python eTracker.py help'."
         exit()
 
+    # Instantiate contoroller
+    controller = TrackController()
+
     # Parse argv
 
-    # Set delay time
-    delay_time = float(argv[0])
+    # Set interval
+    controller.setInterval(float(argv[0]))
 
     # Set output file path
-    output_path = None
     if len(argv) > 1:
-        output_path = argv[1]
-
-    # Connect to INA219 chip
-    global ina219
-    ina219 = ReadFromINA219()
-
-    # Handle signal SIGINT
-    signal.signal(signal.SIGINT, SIGINTHandler)
-
-    # Instantiate controller
-    global out_control
-    out_control = OutputController()
-
-    # Configuration
-    out_control.setOutputPath(output_path)
-    out_control.setDelayTime(delay_time)
-    out_control.setJSONFactory(getOutputData)
+        controller.setOutputPath(argv[1])
 
     # Print message
     print "Start tracking..."
     print 'Press "Ctrl + c" to quit.'
 
     # Start tracking
-    out_control.start()
+    controller.start()

@@ -12,8 +12,8 @@ __author__  = "Hiroyuki Matsuo <h-matsuo@ist.osaka-u.ac.jp>"
 import sys
 
 from lib.utils import Utils
-from lib.track import track
-from lib.analyze import analyze
+from lib.track import exec_track
+from lib.analyze import exec_analyze
 
 def main():
 
@@ -33,11 +33,11 @@ def main():
     # Command: track
     elif argv[1] == "track":
         del argv[0:2]
-        track(argv)
+        exec_track(argv)
     # Command: analyze
     elif argv[1] == "analyze":
         del argv[0:2]
-        analyze(argv)
+        exec_analyze(argv)
     # Invalid command indicated
     else:
         print "ERROR: %s: invalid command;" % argv[1]
