@@ -126,9 +126,9 @@ def exec_track(argv):
     @param argv Command options
     """
 
-    # Print error message if no argv indicated
+    # Print error message if no argv specified
     if len(argv) < 1:
-        print "ERROR: track: indicate interval in [sec];"
+        print "ERROR: track: specify interval in [sec];"
         print "       See 'python eTracker.py help'."
         exit()
 

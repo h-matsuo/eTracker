@@ -20,7 +20,7 @@ def main():
     # Get command line args (argv)
     argv = sys.argv
 
-    # Print usage if no commands indicated
+    # Print usage if no commands specified
     if len(argv) < 2:
         Utils.printUsage()
         exit()
@@ -38,7 +38,7 @@ def main():
     elif argv[1] == "analyze":
         del argv[0:2]
         exec_analyze(argv)
-    # Invalid command indicated
+    # Invalid command
     else:
         print "ERROR: %s: invalid command;" % argv[1]
         print "       See 'python eTracker.py help'."

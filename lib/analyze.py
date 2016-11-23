@@ -120,7 +120,7 @@ def exec_analyze(argv):
 
     # Print error message if lack of argv
     if len(argv) < 3:
-        print "ERROR: analyze: indicate options;"
+        print "ERROR: analyze: specified options;"
         print "       See 'python eTracker.py help'."
         exit()
 
