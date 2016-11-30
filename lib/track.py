@@ -26,6 +26,8 @@ class TrackController:
         Constructor
         """
         self.firstData = True
+        # Initialize output buffer
+        self.buf = ""
         # Default output: standard output
         self.output_path = None
         # Connect to INA219 chip
@@ -64,6 +66,7 @@ class TrackController:
         self.thread_id.cancel()
         self.__write("\n]")
         if self.output_path != None:
+            self.fout.write(self.buf)
             self.fout.close()
 
     def __write(self, data):
@@ -73,7 +76,7 @@ class TrackController:
         @param str Output string
         """
         if self.output_path != None:
-            self.fout.write(data)
+            self.buf += data
         else:
             print data, # Print without "\n"
 
