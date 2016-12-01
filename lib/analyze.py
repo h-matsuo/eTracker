@@ -9,7 +9,6 @@ __author__  = "Hiroyuki Matsuo <h-matsuo@ist.osaka-u.ac.jp>"
 
 from datetime import datetime
 import json
-import sys
 
 def calculateDiffInSec(previous_time, current_time):
     """

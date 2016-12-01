@@ -7,7 +7,6 @@ Implementation of command: track
 
 __author__  = "Hiroyuki Matsuo <h-matsuo@ist.osaka-u.ac.jp>"
 
-import collections
 from datetime import datetime
 import json
 import signal

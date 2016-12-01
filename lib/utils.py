@@ -7,8 +7,6 @@ Utilities for internal implementation
 
 __author__  = "Hiroyuki Matsuo <h-matsuo@ist.osaka-u.ac.jp>"
 
-import json
-
 class Utils:
     """
     Utility class for internal implementation
