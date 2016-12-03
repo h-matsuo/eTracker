@@ -157,12 +157,12 @@ def exec_analyze(argv):
 
     consumed_joules = 0.0
     previous_time  = json_data[boundary.getBeginIndex()]["date"]
-    previous_power = json_data[boundary.getBeginIndex()]["data"]["power_w"]
+    previous_power = json_data[boundary.getBeginIndex()]["power_w"]
 
     for i in range(boundary.getBeginIndex() + 1, boundary.getEndIndex() + 1):
 
         current_time  = json_data[i]["date"]
-        current_power = json_data[i]["data"]["power_w"]
+        current_power = json_data[i]["power_w"]
 
         # Caluclate diff of time in sec
         diff_s = calculateDiffInSec(previous_time, current_time)

@@ -24,9 +24,10 @@ class TrackController:
         """
         Constructor
         """
-        self.firstData = True
-        # Initialize output buffer
-        self.buf = ""
+        # Whether exporting data to the external file or not
+        self.does_export = False
+        # Initialize output data
+        self.tracked_data = []
         # Default output: standard output
         self.output_path = None
         # Connect to INA219 chip
@@ -49,13 +50,12 @@ class TrackController:
         @param output_path Output file path
         """
         self.output_path = output_path
-        self.fout = open(self.output_path, "w")
+        self.does_export = True
 
     def start(self):
         """
         Start tracking
         """
-        self.__write("[\n")
         self.__track()
 
     def stop(self):
@@ -63,57 +63,35 @@ class TrackController:
         Stop tracking
         """
         self.thread_id.cancel()
-        self.__write("\n]")
-        if self.output_path != None:
-            self.fout.write(self.buf)
-            self.fout.close()
-
-    def __write(self, data):
-        """
-        Write data to standard output or file
-
-        @param str Output string
-        """
-        if self.output_path != None:
-            self.buf += data
-        else:
-            print data, # Print without "\n"
+        if self.does_export:
+            fout = open(self.output_path, "w")
+            json.dump(self.tracked_data, fout, indent = 2, separators = (",", ": "))
+            fout.close()
 
     def __track(self):
         """
         Track INA219 repeatedly
         """
-        self.thread_id = threading.Timer(self.interval, self.__track)
-        self.thread_id.start()
-        # Get JSON data
-        data = self.__getJSONData(datetime.today(), self.ina219).split("\n")
-        # Write data delimiter (",")
-        if self.firstData == True:
-            self.firstData = False
+        begin = datetime.today()
+        if self.does_export:
+            self.tracked_data.append(self.__getTrackedData())
         else:
-            self.__write(",\n")
-        # Format and write JSON data
-        for i in range(0, len(data)):
-            self.__write("  " + data[i].rstrip())
-            if i != len(data) - 1:
-                self.__write("\n")
+            print json.dumps(self.__getTrackedData(), indent = 2, separators = (",", ": "))
+        end = datetime.today()
 
-    def __getJSONData(self, datetime_obj, ina219_obj):
-        """
-        Prepare for data to be output in JSON format
+        diff = self.interval - (end - begin).total_seconds()
+        if diff < 0: diff = 0
+        self.thread_id = threading.Timer(diff, self.__track)
+        self.thread_id.start()
 
-        @param datetime_obj datetime.datetime object
-        @param ina219_obj ReadFromINA219 object
-        @return Data to be output in JSON format
+    def __getTrackedData(self):
         """
-        return json.dumps({
-            "date": Utils.formatDatetime(datetime_obj),
-            "data": {
-                "bus_voltage_v": ina219_obj.getBusVoltage_V(),
-                "current_ma"   : ina219_obj.getCurrent_mA(),
-                "power_w"      : ina219_obj.getPower_W()
-            }
-        }, indent = 2)
+        Prepare for data
+        """
+        return {
+            "date": Utils.formatDatetime(datetime.today()),
+            "power_w": self.ina219.getPower_W()
+        }
 
     def __SIGINTHandler(self, num, frame):
         """
