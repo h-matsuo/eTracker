@@ -10,7 +10,7 @@ __author__  = "Hiroyuki Matsuo <h-matsuo@ist.osaka-u.ac.jp>"
 from datetime import datetime
 import json
 import signal
-import threading
+import time
 
 from lib.read_from_ina219 import ReadFromINA219
 from lib.utils import Utils
@@ -24,6 +24,8 @@ class TrackController:
         """
         Constructor
         """
+        # Stop flag
+        self.stop_flag = False
         # Whether exporting data to the external file or not
         self.does_export = False
         # Initialize output data
@@ -32,8 +34,6 @@ class TrackController:
         self.output_path = None
         # Connect to INA219 chip
         self.ina219 = ReadFromINA219()
-        # Handle SIGINT
-        signal.signal(signal.SIGINT, self.__SIGINTHandler)
 
     def setInterval(self, interval):
         """
@@ -62,7 +62,7 @@ class TrackController:
         """
         Stop tracking
         """
-        self.thread_id.cancel()
+        self.stop_flag = True
         if self.does_export:
             fout = open(self.output_path, "w")
             json.dump(self.tracked_data, fout, indent = 2, separators = (",", ": "))
@@ -72,17 +72,17 @@ class TrackController:
         """
         Track INA219 repeatedly
         """
-        begin = datetime.today()
-        if self.does_export:
-            self.tracked_data.append(self.__getTrackedData())
-        else:
-            print json.dumps(self.__getTrackedData(), indent = 2, separators = (",", ": "))
-        end = datetime.today()
+        while not self.stop_flag:
+            begin = datetime.today()
+            if self.does_export:
+                self.tracked_data.append(self.__getTrackedData())
+            else:
+                print json.dumps(self.__getTrackedData(), indent = 2, separators = (",", ": "))
+            end = datetime.today()
 
-        diff = self.interval - (end - begin).total_seconds()
-        if diff < 0: diff = 0
-        self.thread_id = threading.Timer(diff, self.__track)
-        self.thread_id.start()
+            diff = self.interval - (end - begin).total_seconds()
+            if diff < 0: diff = 0
+            time.sleep(diff)
 
     def __getTrackedData(self):
         """
@@ -93,11 +93,12 @@ class TrackController:
             "power_w": self.ina219.getPower_W()
         }
 
-    def __SIGINTHandler(self, num, frame):
-        """
-        Signal SIGINT handler
-        """
-        self.stop()
+def SIGINTHandler(signum, frame):
+    """
+    Signal SIGINT handler
+    """
+    global controller
+    controller.stop()
 
 def exec_track(argv):
     """
@@ -112,7 +113,8 @@ def exec_track(argv):
         print "       See 'python eTracker.py help'."
         exit()
 
-    # Instantiate contoroller
+    # Instantiate controller
+    global controller
     controller = TrackController()
 
     # Parse argv
@@ -127,6 +129,9 @@ def exec_track(argv):
     # Print message
     print "Start tracking..."
     print 'Press "Ctrl + c" to quit.'
+
+    # Handle SIGINT
+    signal.signal(signal.SIGINT, SIGINTHandler)
 
     # Start tracking
     controller.start()
