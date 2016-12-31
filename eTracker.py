@@ -22,14 +22,14 @@ def main():
 
     # Print usage if no commands specified
     if len(argv) < 2:
-        Utils.printUsage()
-        exit()
+        sys.stderr.write(Utils.getUsage())
+        sys.exit(1)
 
     # Parse command
 
     # Command: help
     if argv[1] == "help":
-        Utils.printUsage()
+        sys.stdout.write(Utils.getUsage())
     # Command: track
     elif argv[1] == "track":
         del argv[0:2]
@@ -40,8 +40,9 @@ def main():
         exec_analyze(argv)
     # Invalid command
     else:
-        print "ERROR: %s: invalid command;" % argv[1]
-        print "       See 'python eTracker.py help'."
+        sys.stderr.write("ERROR: %s: invalid command;\n" % argv[1])
+        sys.stderr.write("       See 'python eTracker.py help'.\n")
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()

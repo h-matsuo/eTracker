@@ -9,6 +9,7 @@ __author__  = "Hiroyuki Matsuo <h-matsuo@ist.osaka-u.ac.jp>"
 
 from datetime import datetime
 import json
+import sys
 
 def calculateDiffInSec(previous_time, current_time):
     """
@@ -120,9 +121,9 @@ def exec_analyze(argv):
 
     # Print error message if lack of argv
     if len(argv) < 3:
-        print "ERROR: analyze: specified options;"
-        print "       See 'python eTracker.py help'."
-        exit()
+        sys.stderr.write("ERROR: analyze: specified options;\n")
+        sys.stderr.write("       See 'python eTracker.py help'.\n")
+        sys.exit(1)
 
     # Set input file path
     input_path = argv[0]

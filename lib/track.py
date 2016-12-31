@@ -10,6 +10,7 @@ __author__  = "Hiroyuki Matsuo <h-matsuo@ist.osaka-u.ac.jp>"
 from datetime import datetime
 import json
 import signal
+import sys
 import time
 
 from lib.read_from_ina219 import ReadFromINA219
@@ -109,9 +110,9 @@ def exec_track(argv):
 
     # Print error message if no argv specified
     if len(argv) < 1:
-        print "ERROR: track: specify interval in [sec];"
-        print "       See 'python eTracker.py help'."
-        exit()
+        sys.stderr.write("ERROR: track: specify interval in [sec];\n")
+        sys.stderr.write("       See 'python eTracker.py help'.\n")
+        sys.exit(1)
 
     # Instantiate controller
     global controller
