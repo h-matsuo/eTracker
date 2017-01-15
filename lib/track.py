@@ -67,6 +67,7 @@ class TrackController:
             fout = open(self.__out_file, "w")
             json.dump(self.__tracked_data, fout, indent = 2, separators = (",", ": "))
             fout.close()
+            os.chmod(self.__out_file, 0666)
 
     def __track(self):
         """
