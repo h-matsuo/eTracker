@@ -7,25 +7,9 @@ Implementation of command: analyze
 
 __author__  = "Hiroyuki Matsuo <h-matsuo@ist.osaka-u.ac.jp>"
 
-from datetime import datetime
 import json
-import sys
 
-def calculateDiffInSec(previous_time, current_time):
-    """
-    Calculate diff time in [sec] between two time string
-
-    NOTE: Format of time must follow: 2016/11/01-10:05:20.010
-
-    @param previous_time Time string #1
-    @param current_time  Time string #2
-    @return Diff time in [sec]
-    """
-    previous_millisec = previous_time[previous_time.rfind('.')+1:]
-    previous_datetime = datetime.strptime(previous_time[:previous_time.rfind('.')], "%Y/%m/%d-%H:%M:%S")
-    current_millisec = current_time[current_time.rfind('.')+1:]
-    current_datetime = datetime.strptime(current_time[:current_time.rfind('.')], "%Y/%m/%d-%H:%M:%S")
-    return (current_datetime - previous_datetime).total_seconds() - 1 + ((1000 + int(current_millisec) - int(previous_millisec)) / 1000.0)
+from lib.utils import Utils
 
 class SearchForBoundary:
     """
@@ -74,7 +58,7 @@ class SearchForBoundary:
         else:
             for i in range(0, len(self.json_data)):
 
-                diff_begin_s = calculateDiffInSec(self.begin_time, self.json_data[i]["date"])
+                diff_begin_s = Utils.calculateDiffInSec(self.begin_time, self.json_data[i]["date"])
 
                 if diff_begin_s < 0:
                     continue
@@ -82,7 +66,7 @@ class SearchForBoundary:
                 if i == 0:
                     self.begin_index = i    # 0
                 else:
-                    diff_tmp_s = calculateDiffInSec(self.begin_time, self.json_data[i - 1]["date"])
+                    diff_tmp_s = Utils.calculateDiffInSec(self.begin_time, self.json_data[i - 1]["date"])
                     if diff_begin_s < abs(diff_tmp_s):
                         self.begin_index = i
                     else:
@@ -96,7 +80,7 @@ class SearchForBoundary:
         else:
             for i in range(0, len(self.json_data)):
 
-                diff_end_s = calculateDiffInSec(self.end_time, self.json_data[i]["date"])
+                diff_end_s = Utils.calculateDiffInSec(self.end_time, self.json_data[i]["date"])
 
                 if diff_end_s < 0:
                     continue
@@ -104,7 +88,7 @@ class SearchForBoundary:
                 if i == len(self.json_data) - 1:
                     self.end_index = i      # len(self.json_data) - 1
                 else:
-                    diff_tmp_s = calculateDiffInSec(self.end_time, self.json_data[i - 1]["date"])
+                    diff_tmp_s = Utils.calculateDiffInSec(self.end_time, self.json_data[i - 1]["date"])
                     if diff_end_s < abs(diff_tmp_s):
                         self.end_index = i
                     else:
@@ -112,49 +96,40 @@ class SearchForBoundary:
 
                 break
 
-def exec_analyze(argv):
+def exec_analyze(flags):
     """
     Execute command: analyze
 
-    @param argv Command options
+    @param flags Result of parsing argv
     """
 
-    # Print error message if lack of argv
-    if len(argv) < 3:
-        sys.stderr.write("ERROR: analyze: specified options;\n")
-        sys.stderr.write("       See 'python eTracker.py help'.\n")
-        sys.exit(1)
+    # Set input filename
+    input_filename = flags.in_file
 
-    # Set input file path
-    input_path = argv[0]
+    # Set the beginning of the section of time to analyze
+    begin_time = flags.begin
 
-    # Set begin time of analyzation
-    begin_time = argv[1]
-
-    # Set end time of analyzation
-    end_time = argv[2]
+    # Set the end of the section of time to analyze
+    end_time = flags.end
 
     # Open input file and parse JSON data
-    fin = open(input_path, "r")
+    fin = open(input_filename, "r")
     json_data = json.load(fin)
-
-    # Print info
-    print "Checking start/end date..."
 
     # Calculate boundary of begin and end for analyzation
     boundary = SearchForBoundary(begin_time, end_time, json_data)
 
     # Print info
-    print "Begin date of analyzation: %s" % json_data[boundary.getBeginIndex()]["date"]
-    print "  End date of analyzation: %s" % json_data[boundary.getEndIndex()]["date"]
+    print "Beginning of the section: %s" % json_data[boundary.getBeginIndex()]["date"]
+    print "      End of the section: %s" % json_data[boundary.getEndIndex()]["date"]
 
     # Print duration
-    print "Duration: %.3f [sec]" % calculateDiffInSec(json_data[boundary.getBeginIndex()]["date"], json_data[boundary.getEndIndex()]["date"])
+    print "Duration: %.3f [sec]" % Utils.calculateDiffInSec(json_data[boundary.getBeginIndex()]["date"], json_data[boundary.getEndIndex()]["date"])
 
     # Print info
-    print "Calculating power..."
+    print "Calculating..."
 
-    # Calculate power with the trapezoidal approximation
+    # Calculate energy consumption with the trapezoidal approximation
 
     consumed_joules = 0.0
     previous_time  = json_data[boundary.getBeginIndex()]["date"]
@@ -166,16 +141,16 @@ def exec_analyze(argv):
         current_power = json_data[i]["power_w"]
 
         # Caluclate diff of time in sec
-        diff_s = calculateDiffInSec(previous_time, current_time)
+        diff_s = Utils.calculateDiffInSec(previous_time, current_time)
 
         # Calculate area of trapezoid
         consumed_joules += (current_power + previous_power) * diff_s / 2.0
 
-        previous_time = current_time
+        previous_time  = current_time
         previous_power = current_power
 
     # Close input file
     fin.close()
 
     # Print calculated value
-    print "Consumed power: %f [J]" % consumed_joules
+    print "Total energy consumption: %f [J]" % consumed_joules

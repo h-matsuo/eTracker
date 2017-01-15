@@ -15,34 +15,17 @@ from lib.utils import Utils
 
 def main():
 
-    # Get command line args (argv)
-    argv = sys.argv
+    # Parse command line args
+    result = Utils.parseArgv()
 
-    # Print usage if no commands specified
-    if len(argv) < 2:
-        sys.stderr.write(Utils.getUsage())
-        sys.exit(1)
-
-    # Parse command
-
-    # Command: help
-    if argv[1] == "help":
-        sys.stdout.write(Utils.getUsage())
-    # Command: track
-    elif argv[1] == "track":
-        del argv[0:2]
+    # Execute track sub-command
+    if result.sub_command == "track":
         from lib.track import exec_track
-        exec_track(argv)
-    # Command: analyze
-    elif argv[1] == "analyze":
-        del argv[0:2]
+        exec_track(result)
+    # Execute analyze sub-command
+    elif result.sub_command == "analyze":
         from lib.analyze import exec_analyze
-        exec_analyze(argv)
-    # Invalid command
-    else:
-        sys.stderr.write("ERROR: %s: invalid command;\n" % argv[1])
-        sys.stderr.write("       See 'python eTracker.py help'.\n")
-        sys.exit(1)
+        exec_analyze(result)
 
 if __name__ == "__main__":
     main()

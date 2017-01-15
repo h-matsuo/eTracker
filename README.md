@@ -22,36 +22,32 @@ Track energy consumption of your device with Adafruit INA219 chip.
 ## Usage
 
 ```txt
-Usage: python eTracker.py <command> [<args>]
+usage: eTracker.py track [-h] [-i <interval>] [-o <filename>]
 
-eTracker は，Adafruit INA219 チップと I2C 接続された Raspberry Pi 上で，
-目標デバイスの電力消費状況の監視，およびその分析を行うことができる
-ユーティリティツールです．
-Python 2.x 系での動作を確認しています．
+track energy consumption of target device
 
-次のコマンドが使用できます：
+optional arguments:
+  -h, --help     show this help message and exit
+  -i <interval>  set the tracking interval in [sec]; default = 0.02
+  -o <filename>  write output to <filename>
+```
 
-help
-    このテキストを表示します．
+```txt
+usage: eTracker.py analyze [-h] [-b <begin_date>] [-e <end_date>] <filename>
 
-track <interval> [<output_path>]
-    目標デバイスの電力消費状況を監視します．
-    Adafruit INA219 チップからデータを取得し，整形して標準出力に出力します．
-    <interval>
-            データを取得する間隔を秒単位で指定します．
-    <output_path>
-            データの出力ファイルを指定できます．
+analyze the json file created by track sub-command
 
-analyze <input_path> <begin_date> <end_date>
-    track コマンドで得られたデータを分析し，累計の電力消費量を計算します．
-    <input_path>
-            分析対象となる入力ファイルを指定します．
-    <begin_date>
-            分析対象のデータの開始時刻を指定します．
-            時刻は '2016/09/22-09:59:30.005' のように指定してください．
-            '-' を指定すると，入力ファイルの最初から分析します．
-    <end_date>
-            分析対象のデータの終了時刻を指定します．
-            時刻は '2016/09/22-10:01:15.090' のように指定してください．
-            '-' を指定すると，入力ファイルの最後まで分析します．
+positional arguments:
+  <filename>            specify the file to analyze
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -b <begin_date>, --begin <begin_date>
+                        specify the beginning of the section of time to
+                        analyze; if '-' is given, analyze from the beginning
+                        of the file; default = '-'
+  -e <end_date>, --end <end_date>
+                        specify the end of the section of time to analyze; if
+                        '-' is given, analyze to the end of the file; default
+                        = '-'
 ```

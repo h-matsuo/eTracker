@@ -9,6 +9,7 @@ __author__  = "Hiroyuki Matsuo <h-matsuo@ist.osaka-u.ac.jp>"
 
 from datetime import datetime
 import json
+import os
 import signal
 import sys
 import time
@@ -25,33 +26,31 @@ class TrackController:
         """
         Constructor
         """
-        # Stop flag
-        self.stop_flag = False
-        # Whether exporting data to the external file or not
-        self.does_export = False
         # Initialize output data
-        self.tracked_data = []
-        # Default output: standard output
-        self.output_path = None
+        self.__tracked_data = []
+        # Stop flag for tracking
+        self.__stop_flag = False
+        # Default values
+        self.__interval = 0.02
+        self.__out_file = None
         # Connect to INA219 chip
-        self.ina219 = ReadFromINA219()
+        self.__ina219 = ReadFromINA219()
 
     def setInterval(self, interval):
         """
-        Set interval between tracking
+        Set tracking interval
 
-        @param interval Interval
+        @param interval Tracking interval
         """
-        self.interval = interval
+        self.__interval = interval
 
-    def setOutputPath(self, output_path):
+    def setOutputFilename(self, filename):
         """
-        Set file path for writing tracked data
+        Set filename to write output
 
-        @param output_path Output file path
+        @param filename Filename to write output
         """
-        self.output_path = output_path
-        self.does_export = True
+        self.__out_file = filename
 
     def start(self):
         """
@@ -63,35 +62,38 @@ class TrackController:
         """
         Stop tracking
         """
-        self.stop_flag = True
-        if self.does_export:
-            fout = open(self.output_path, "w")
-            json.dump(self.tracked_data, fout, indent = 2, separators = (",", ": "))
+        self.__stop_flag = True
+        if self.__out_file != None:
+            fout = open(self.__out_file, "w")
+            json.dump(self.__tracked_data, fout, indent = 2, separators = (",", ": "))
             fout.close()
 
     def __track(self):
         """
         Track INA219 repeatedly
         """
-        while not self.stop_flag:
+        while not self.__stop_flag:
             begin = datetime.today()
-            if self.does_export:
-                self.tracked_data.append(self.__getTrackedData())
+            tracked_data = self.__getTrackedData()
+            if self.__out_file != None:
+                self.__tracked_data.append(tracked_data)
             else:
-                print json.dumps(self.__getTrackedData(), indent = 2, separators = (",", ": "))
+                print json.dumps(tracked_data, indent = 2, separators = (",", ": "))
             end = datetime.today()
 
-            diff = self.interval - (end - begin).total_seconds()
+            diff = self.__interval - (end - begin).total_seconds()
             if diff < 0: diff = 0
             time.sleep(diff)
 
     def __getTrackedData(self):
         """
-        Prepare for data
+        Get data from INA219
+
+        @return Tracked data
         """
         return {
             "date": Utils.formatDatetime(datetime.today()),
-            "power_w": self.ina219.getPower_W()
+            "power_w": self.__ina219.getPower_W()
         }
 
 def SIGINTHandler(signum, frame):
@@ -101,31 +103,28 @@ def SIGINTHandler(signum, frame):
     global controller
     controller.stop()
 
-def exec_track(argv):
+def exec_track(flags):
     """
     Execute command: track
 
-    @param argv Command options
+    @param flags Result of parsing argv
     """
 
-    # Print error message if no argv specified
-    if len(argv) < 1:
-        sys.stderr.write("ERROR: track: specify interval in [sec];\n")
-        sys.stderr.write("       See 'python eTracker.py help'.\n")
+    # Check if executed as root
+    if os.getuid() != 0:
+        sys.stderr.write("Sorry, sub-command 'track' must be executed as root user.\n")
         sys.exit(1)
 
     # Instantiate controller
     global controller
     controller = TrackController()
 
-    # Parse argv
-
     # Set interval
-    controller.setInterval(float(argv[0]))
+    controller.setInterval(flags.interval)
 
-    # Set output file path
-    if len(argv) > 1:
-        controller.setOutputPath(argv[1])
+    # Set output filename
+    if flags.out_file != None:
+        controller.setOutputFilename(flags.out_file)
 
     # Print message
     print "Start tracking..."
