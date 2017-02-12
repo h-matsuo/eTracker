@@ -51,3 +51,8 @@ optional arguments:
                         '-' is given, analyze to the end of the file; default
                         = '-'
 ```
+
+
+## License
+
+MIT License.
